@@ -2,15 +2,17 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <windows.h>
 
 struct set {
     int_fast32_t *pa;
-    int_fast32_t min, max, bit_size, size, power;
-};
+    int_fast32_t min, max;
+    size_t bit_size, size, power;
+};// Тип, который задает множество
 
+// Возвращает дескриптор на множество элементы которого могут принимать
+// значения от min до max
 struct set create_set(int_fast32_t min, int_fast32_t max){
-    int_fast32_t len, size, bit_size;
+    size_t len, size, bit_size;
     len = max - min + 1;
     bit_size = sizeof(int_fast32_t) * 8;
     size = len / bit_size + (int)(len % bit_size != 0);
@@ -20,6 +22,7 @@ struct set create_set(int_fast32_t min, int_fast32_t max){
     return r;
 }
 
+// Добавляет value в множество по адресу s
 void add(struct set *s,int_fast32_t value){
     if (value >= s->min && value <= s->max){
         size_t i, bi;
@@ -34,15 +37,17 @@ void add(struct set *s,int_fast32_t value){
     }
 }
 
-struct set input(struct set *s, int_fast32_t n){
+// Считывает n элементов, добавляет их в множество s
+void input_set(struct set s, int_fast32_t n){
     for(size_t i = 0; i < n; i++){
         int_fast32_t val;
         scanf("%d", &val);
-        add(s, val);
+        add(&s, val);
     }
 }
 
-void output(struct set s){
+// Выводит элементы множества s
+void output_set(struct set s){
     printf("{");
     int_fast32_t elem;
     elem = s.min;
@@ -51,7 +56,7 @@ void output(struct set s){
         if(s.pa[i] != 0) {
             for (j = 0; j < s.bit_size; j++) {
                 int_fast32_t bit;
-                bit = s.pa[i] & (1 << (s.bit_size - j));
+                bit = s.pa[i] & (1 << (s.bit_size - j+1));
                 if (bit) {
                     printf("%d, ", elem);
                 }
@@ -65,7 +70,9 @@ void output(struct set s){
     printf("}");
 }
 
-bool includion(struct set a, struct set b){
+// Возвращает "ИСТИНА", если все элементы множества a содержатся в
+// множестве b, иначе возвращает "ЛОЖЬ"
+bool inclusion(struct set a, struct set b){
     if(a.min == b.min || a.max == b.max) {
         if (a.power > b.power)
             return false;
@@ -88,7 +95,9 @@ bool includion(struct set a, struct set b){
     return true;
 }
 
-bool strict_includion(struct set a, struct set b){
+// Возвращает "ИСТИНА", если все элементы множества a содержатся в
+// множестве b и a равно b, иначе возвращает "ЛОЖЬ"
+bool strict_inclusion(struct set a, struct set b){
     if(a.min == b.min || a.max == b.max) {
         if (a.power >= b.power || a.power == 0)
             return false;
@@ -111,16 +120,8 @@ bool strict_includion(struct set a, struct set b){
     return true;
 }
 
-int_fast32_t cnt_one(int_fast32_t n){
-    int_fast32_t cnt = 0;
-    while (n != 0){
-        if (n % 2 == 1)
-            cnt++;
-        n /= 2;
-    }
-    return cnt;
-}
-
+// Возвращает множество, которое является дополнением до универсума
+// множества s
 struct set to_universe(struct set s){
     for(size_t i = 0; i < s.size; i++){
         s.pa[i] = ~s.pa[i];
@@ -129,6 +130,19 @@ struct set to_universe(struct set s){
     return s;
 }
 
+// Возвращает количество едениц в двоичном коде числа n
+static size_t cnt_one(int_fast32_t n){
+    size_t cnt = 0;
+    int_fast32_t mask = 1;
+    for(size_t i = 1; i <= 32; i++){
+        if(n & mask) cnt++;
+        mask <<= 1;
+    }
+    return cnt;
+}
+
+// Возвращает множество, которое является результатом
+// объединения множеств a и b
 struct set association(struct set a, struct set b){
     struct set c;
     c = create_set(a.min, b.max);
@@ -144,6 +158,8 @@ struct set association(struct set a, struct set b){
     return c;
 }
 
+// Возвращает множество, которое является результатом
+// пересечения множеств a и b
 struct set intersection(struct set a, struct set b){
     struct set c;
     c = create_set(a.min, b.max);
@@ -158,6 +174,8 @@ struct set intersection(struct set a, struct set b){
     return c;
 }
 
+// Возвращает множество, которое является результатом
+// разности множеств a и b
 struct set difference(struct set a, struct set b){
     struct set c;
     c = create_set(a.min, a.max);
@@ -172,6 +190,8 @@ struct set difference(struct set a, struct set b){
     return c;
 }
 
+// Возвращает множество, которое является результатом
+// симметрической разности множеств a и b
 struct set symmetric_difference(struct set a, struct set b){
     struct set c;
     c = create_set(a.min, a.max);
@@ -185,5 +205,3 @@ struct set symmetric_difference(struct set a, struct set b){
     }
     return c;
 }
-
-
