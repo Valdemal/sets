@@ -1,13 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
-
-struct set {
-    int_fast32_t *pa;
-    int_fast32_t min, max;
-    size_t bit_size, size, power;
-};// Тип, который задает множество
+#include "sets.h"
 
 // Возвращает дескриптор на множество элементы которого могут принимать
 // значения от min до max
