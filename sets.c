@@ -40,24 +40,27 @@ void input_set(struct set s, int_fast32_t n){
 // Выводит элементы множества s
 void output_set(struct set s){
     printf("{");
-    int_fast32_t elem;
-    elem = s.min;
-    size_t j = 0;
-    for(size_t i = 0;i < s.size; i++){
-        if(s.pa[i] != 0) {
-            for (j = 0; j < s.bit_size; j++) {
-                int_fast32_t bit;
-                bit = s.pa[i] & (1 << (s.bit_size - j+1));
-                if (bit) {
-                    printf("%d, ", elem);
+
+    if (s.power > 0) {
+        int_fast32_t elem = s.min;
+        for (size_t i = 0; i < s.size; i++) {
+            if (s.pa[i] != 0) {
+                for (size_t j = 0; j < s.bit_size;j++) {
+                    if(elem <= s.max) {
+                        int_fast32_t bit;
+                        bit = s.pa[i] & (1 << (s.bit_size - j + 1));
+                        if (bit) {
+                            printf("%d, ", elem);
+                        }
+                        elem++;
+                    } else break;
                 }
-                elem++;
-            }
-        } else
-            elem += s.bit_size;
-    }
-    if (j > 0)
+            } else
+                elem += s.bit_size;
+        }
         printf("\b\b");
+    }
+
     printf("}");
 }
 
@@ -114,11 +117,12 @@ bool strict_inclusion(struct set a, struct set b){
 // Возвращает множество, которое является дополнением до универсума
 // множества s
 struct set to_universe(struct set s){
+    struct set comp = s;
     for(size_t i = 0; i < s.size; i++){
-        s.pa[i] = ~s.pa[i];
+        comp.pa[i] = ~s.pa[i];
     }
-    s.power = s.size * s.bit_size - s.power;
-    return s;
+    comp.power = s.size * s.bit_size - s.power;
+    return comp;
 }
 
 // Возвращает количество едениц в двоичном коде числа n
