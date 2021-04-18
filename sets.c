@@ -2,7 +2,7 @@
 
 // Возвращает дескриптор на множество элементы которого могут принимать
 // значения от min до max
-struct set create_set(int_fast32_t min, int_fast32_t max){
+struct set createSet(int_fast32_t min, int_fast32_t max){
     size_t len, size, bit_size;
     len = max - min + 1;
     bit_size = sizeof(int_fast32_t) * 8;
@@ -29,16 +29,16 @@ void add(struct set *s,int_fast32_t value){
 }
 
 // Считывает n элементов, добавляет их в множество s
-void input_set(struct set s, int_fast32_t n){
+void inputSet(struct set *s, int_fast32_t n){
     for(size_t i = 0; i < n; i++){
         int_fast32_t val;
         scanf("%d", &val);
-        add(&s, val);
+        add(s, val);
     }
 }
 
 // Выводит элементы множества s
-void output_set(struct set s){
+void outputSet(struct set s){
     printf("{");
 
     if (s.power > 0) {
@@ -91,7 +91,7 @@ bool inclusion(struct set a, struct set b){
 
 // Возвращает "ИСТИНА", если все элементы множества a содержатся в
 // множестве b и a равно b, иначе возвращает "ЛОЖЬ"
-bool strict_inclusion(struct set a, struct set b){
+bool strictInclusion(struct set a, struct set b){
     if(a.min == b.min || a.max == b.max) {
         if (a.power >= b.power || a.power == 0)
             return false;
@@ -114,19 +114,8 @@ bool strict_inclusion(struct set a, struct set b){
     return true;
 }
 
-// Возвращает множество, которое является дополнением до универсума
-// множества s
-struct set to_universe(struct set s){
-    struct set comp = s;
-    for(size_t i = 0; i < s.size; i++){
-        comp.pa[i] = ~s.pa[i];
-    }
-    comp.power = s.size * s.bit_size - s.power;
-    return comp;
-}
-
 // Возвращает количество едениц в двоичном коде числа n
-static size_t cnt_one(int_fast32_t n){
+static size_t cntOne(int_fast32_t n){
     size_t cnt = 0;
     int_fast32_t mask = 1;
     for(size_t i = 1; i <= 32; i++){
@@ -136,15 +125,27 @@ static size_t cnt_one(int_fast32_t n){
     return cnt;
 }
 
+// Возвращает множество, которое является дополнением до универсума
+// множества s
+struct set toUniverse(struct set s){
+    struct set comp;
+    comp = createSet(s.min, s.max);
+    for(size_t i = 0; i < s.size; i++){
+        comp.pa[i] = ~s.pa[i];
+        comp.power += cntOne(comp.pa[i]);
+    }
+    return comp;
+}
+
 // Возвращает множество, которое является результатом
 // объединения множеств a и b
 struct set association(struct set a, struct set b){
     struct set c;
-    c = create_set(a.min, b.max);
+    c = createSet(a.min, b.max);
     if(a.min == b.min || a.max == b.max) {
         for (size_t i = 0; i < a.size; i++) {
             c.pa[i] = a.pa[i] | b.pa[i];
-            c.power += cnt_one(c.pa[i]);
+            c.power += cntOne(c.pa[i]);
         }
 
     } else {
@@ -157,11 +158,11 @@ struct set association(struct set a, struct set b){
 // пересечения множеств a и b
 struct set intersection(struct set a, struct set b){
     struct set c;
-    c = create_set(a.min, b.max);
+    c = createSet(a.min, b.max);
     if(a.min == b.min || a.max == b.max) {
         for (size_t i = 0; i < a.size; i++) {
             c.pa[i] = a.pa[i] & b.pa[i];
-            c.power += cnt_one(c.pa[i]);
+            c.power += cntOne(c.pa[i]);
         }
     } else {
         fprintf(stderr, "Допустимые диапазоны множеств не совпадают!");
@@ -173,11 +174,11 @@ struct set intersection(struct set a, struct set b){
 // разности множеств a и b
 struct set difference(struct set a, struct set b){
     struct set c;
-    c = create_set(a.min, a.max);
+    c = createSet(a.min, a.max);
     if(a.min == b.min || a.max == b.max) {
         for (size_t i = 0; i < a.size; i++) {
             c.pa[i] = a.pa[i] & ~(b.pa[i]);
-            c.power += cnt_one(c.pa[i]);
+            c.power += cntOne(c.pa[i]);
         }
     } else {
         fprintf(stderr, "Допустимые диапазоны множеств не совпадают!");
@@ -187,16 +188,61 @@ struct set difference(struct set a, struct set b){
 
 // Возвращает множество, которое является результатом
 // симметрической разности множеств a и b
-struct set symmetric_difference(struct set a, struct set b){
+struct set symmetricDifference(struct set a, struct set b){
     struct set c;
-    c = create_set(a.min, a.max);
+    c = createSet(a.min, a.max);
     if(a.min == b.min || a.max == b.max) {
         for (size_t i = 0; i < a.size; i++) {
             c.pa[i] = a.pa[i] ^ b.pa[i];
-            c.power += cnt_one(c.pa[i]);
+            c.power += cntOne(c.pa[i]);
         }
     } else {
         fprintf(stderr, "Допустимые диапазоны множеств не совпадают!");
     }
     return c;
+}
+
+//Возвращает ИСТИНА, если множества a и b равны, иначе ЛОЖЬ
+bool isEqual(struct set a, struct set b){
+
+    if(a.min == b.min || a.max == b.max) {
+        for (size_t i = 0; i < a.size; i++) {
+            if(a.pa[i] != b.pa[i])
+                return false;
+        }
+    } else {
+        fprintf(stderr, "Допустимые диапазоны множеств не совпадают!");
+    }
+    return true;
+}
+
+//Добавляет в множество s элементы массива a размера n
+void addArray(struct set *s, int_fast32_t *a, size_t n){
+    for (int i = 0; i < n; ++i) {
+        add(s,a[i]);
+    }
+}
+
+int_fast32_t *toArray(struct set s){
+    int_fast32_t *pa = (int_fast32_t*)malloc(s.power * sizeof(int_fast32_t));
+    size_t pos = 0;
+
+    int_fast32_t elem = s.min;
+    for (size_t i = 0; i < s.size; i++) {
+        if (s.pa[i] != 0) {
+            for (size_t j = 0; j < s.bit_size;j++) {
+                if(elem <= s.max) {
+                    int_fast32_t bit;
+                    bit = s.pa[i] & (1 << (s.bit_size - j + 1));
+                    if (bit) {
+                        pa[pos++] = elem;
+                    }
+                    elem++;
+                } else break;
+            }
+        } else
+            elem += s.bit_size;
+    }
+
+    return pa;
 }
