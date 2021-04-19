@@ -2,19 +2,19 @@
 
 // Возвращает дескриптор на множество элементы которого могут принимать
 // значения от min до max
-struct set createSet(int_fast32_t min, int_fast32_t max){
+set createSet(int_fast32_t min, int_fast32_t max){
     size_t len, size, bit_size;
     len = max - min + 1;
     bit_size = sizeof(int_fast32_t) * 8;
     size = len / bit_size + (int)(len % bit_size != 0);
     int_fast32_t *pa = (int_fast32_t*)calloc(size, sizeof(int_fast32_t));
 
-    struct set r = {pa, min, max, bit_size, size, 0};
+    set r = {pa, min, max, bit_size, size, 0};
     return r;
 }
 
 // Добавляет value в множество по адресу s
-void add(struct set *s,int_fast32_t value){
+void add(set *s,int_fast32_t value){
     if (value >= s->min && value <= s->max){
         size_t i, bi;
         int_fast32_t pos;
@@ -29,7 +29,7 @@ void add(struct set *s,int_fast32_t value){
 }
 
 // Считывает n элементов, добавляет их в множество s
-void inputSet(struct set *s, int_fast32_t n){
+void inputSet(set *s, int_fast32_t n){
     for(size_t i = 0; i < n; i++){
         int_fast32_t val;
         scanf("%d", &val);
@@ -38,7 +38,7 @@ void inputSet(struct set *s, int_fast32_t n){
 }
 
 // Выводит элементы множества s
-void outputSet(struct set s){
+void outputSet(set s){
     printf("{");
 
     if (s.power > 0) {
@@ -66,7 +66,7 @@ void outputSet(struct set s){
 
 // Возвращает "ИСТИНА", если все элементы множества a содержатся в
 // множестве b, иначе возвращает "ЛОЖЬ"
-bool inclusion(struct set a, struct set b){
+bool inclusion(set a, set b){
     if(a.min == b.min || a.max == b.max) {
         if (a.power > b.power)
             return false;
@@ -91,7 +91,7 @@ bool inclusion(struct set a, struct set b){
 
 // Возвращает "ИСТИНА", если все элементы множества a содержатся в
 // множестве b и a равно b, иначе возвращает "ЛОЖЬ"
-bool strictInclusion(struct set a, struct set b){
+bool strictInclusion(set a, set b){
     if(a.min == b.min || a.max == b.max) {
         if (a.power >= b.power || a.power == 0)
             return false;
@@ -127,8 +127,8 @@ static size_t cntOne(int_fast32_t n){
 
 // Возвращает множество, которое является дополнением до универсума
 // множества s
-struct set toUniverse(struct set s){
-    struct set comp;
+set toUniverse(set s){
+    set comp;
     comp = createSet(s.min, s.max);
     for(size_t i = 0; i < s.size; i++){
         comp.pa[i] = ~s.pa[i];
@@ -139,8 +139,8 @@ struct set toUniverse(struct set s){
 
 // Возвращает множество, которое является результатом
 // объединения множеств a и b
-struct set association(struct set a, struct set b){
-    struct set c;
+set association(set a, set b){
+    set c;
     c = createSet(a.min, b.max);
     if(a.min == b.min || a.max == b.max) {
         for (size_t i = 0; i < a.size; i++) {
@@ -156,8 +156,8 @@ struct set association(struct set a, struct set b){
 
 // Возвращает множество, которое является результатом
 // пересечения множеств a и b
-struct set intersection(struct set a, struct set b){
-    struct set c;
+set intersection(set a, set b){
+    set c;
     c = createSet(a.min, b.max);
     if(a.min == b.min || a.max == b.max) {
         for (size_t i = 0; i < a.size; i++) {
@@ -172,8 +172,8 @@ struct set intersection(struct set a, struct set b){
 
 // Возвращает множество, которое является результатом
 // разности множеств a и b
-struct set difference(struct set a, struct set b){
-    struct set c;
+set difference(set a, set b){
+    set c;
     c = createSet(a.min, a.max);
     if(a.min == b.min || a.max == b.max) {
         for (size_t i = 0; i < a.size; i++) {
@@ -188,8 +188,8 @@ struct set difference(struct set a, struct set b){
 
 // Возвращает множество, которое является результатом
 // симметрической разности множеств a и b
-struct set symmetricDifference(struct set a, struct set b){
-    struct set c;
+set symmetricDifference(set a, set b){
+    set c;
     c = createSet(a.min, a.max);
     if(a.min == b.min || a.max == b.max) {
         for (size_t i = 0; i < a.size; i++) {
@@ -203,7 +203,7 @@ struct set symmetricDifference(struct set a, struct set b){
 }
 
 //Возвращает ИСТИНА, если множества a и b равны, иначе ЛОЖЬ
-bool isEqual(struct set a, struct set b){
+bool isEqual(set a, set b){
 
     if(a.min == b.min || a.max == b.max) {
         for (size_t i = 0; i < a.size; i++) {
@@ -217,13 +217,13 @@ bool isEqual(struct set a, struct set b){
 }
 
 //Добавляет в множество s элементы массива a размера n
-void addArray(struct set *s, int_fast32_t *a, size_t n){
+void addArray(set *s, int_fast32_t *a, size_t n){
     for (int i = 0; i < n; ++i) {
         add(s,a[i]);
     }
 }
 
-int_fast32_t *toArray(struct set s){
+int_fast32_t *toArray(set s){
     int_fast32_t *pa = (int_fast32_t*)malloc(s.power * sizeof(int_fast32_t));
     size_t pos = 0;
 
